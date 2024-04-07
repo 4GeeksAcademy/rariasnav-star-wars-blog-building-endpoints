@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User, People
+from models import db, User, People, Planet, Starship
 #from models import Person
 
 app = Flask(__name__)
@@ -76,6 +76,21 @@ def delete_user(user_id):
     }
     return jsonify(response_body), 200
 
+@app.route('/user/<int:user_id>', methods=['PUT'])
+def update_user(user_id):
+    user = User.query.filter_by(id=user_id).first()
+    body = request.get_json()
+
+    user.email = body['email']
+    user.password = body['password']
+
+    db.session.commit()
+
+    response_body = {
+        "msg" : "user updated succesfully"
+    }
+    return jsonify(response_body), 200
+
 # -----------------PEOPLE--------------------
 @app.route('/people', methods=['GET'])
 def get_people():
@@ -88,7 +103,7 @@ def get_people():
 def get_person(person_id):
     person = People.query.filter_by(id=person_id).first()
 
-    return jsonify(person.serialize())
+    return jsonify(person.serialize()),200
 
 @app.route('/people', methods=['POST'])
 def add_person():
@@ -117,6 +132,94 @@ def delete_person(person_id):
         "msg" : "person deleted succesfully"
     }
     return jsonify(response_body), 200
+
+@app.route('/people/<int:person_id>', methods=['PUT'])
+def update_person(person_id):
+    person = People.query.filter_by(id=person_id).first()
+    body = request.get_json()
+
+    person.gender = body['gender'],
+    person.hair_color = body['hair_color'],
+    person.height = body['height'],
+    person.name = body['name']   
+    
+    db.session.commit()
+
+    response_body = {
+        "msg" : "person updated succesfully"
+    }
+    return jsonify(response_body), 200
+
+#-------------------PLANETS---------------------
+@app.route('/planet', methods=['GET'])
+def get_planets():
+    all_planets = Planet.query.all()
+    result = list(map(lambda planet: planet.serialize() , all_planets))
+
+    return jsonify(result), 200
+
+@app.route('/planet/<int:planet_id>', methods=['GET'])
+def get_planet(planet_id):
+    planet = Planet.query.filter_by(id=planet_id).first()
+
+    return jsonify(planet.serialize()),200
+
+@app.route('/planet', methods=['POST'])
+def add_planet():
+    body = request.get_json()
+    planet = Planet(
+        climate = body['climate'],
+        name = body['name'],
+        rotation_period = body['rotation_period'],
+        terrain = body['terrain']
+    )
+
+    db.session.add(planet)
+    db.session.commit()
+
+    response_body = {
+        "msg" : "planet added succesfully"
+    }
+
+    return jsonify(response_body), 200
+
+@app.route('/planet/<int:planet_id>', methods=['DELETE'])
+def delete_planet(planet_id):
+    planet = Planet.query.filter_by(id=planet_id).first()
+    db.session.delete(planet)
+    db.session.commit()
+
+    response_body = {
+        "msg" : "planet deleted succesfully"
+    }
+    return jsonify(response_body), 200
+
+@app.route('/planet/<int:planet_id>', methods=['PUT'])
+def update_planet(planet_id):
+    planet = Planet.query.filter_by(id=planet_id).first()
+    body = request.get_json()
+    
+    planet.climate = body['climate'],
+    planet.name = body['name'],
+    planet.rotation_period = body['rotation_period'],
+    planet.terrain = body['terrain']
+
+    db.session.commit()
+
+    response_body = {
+        "msg" : "planet updated succesfully"
+    }
+    return jsonify(response_body), 200
+
+#-------------------STARSHIPS--------------------
+
+@app.route('/starship', methods=['GET'])
+def get_starships():
+    all_starships = Starship.query.all()
+    print(all_starships)
+
+    return jsonify('Todas las naves'), 200
+
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
