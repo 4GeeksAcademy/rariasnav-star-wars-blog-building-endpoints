@@ -62,6 +62,7 @@ class Starship(db.Model):
     model = db.Column(db.String(250), unique=True, nullable=False)
     cost_in_credits = db.Column(db.Integer, unique=False, nullable=False)
     crew = db.Column(db.Integer, unique=False, nullable=False)
+    like = db.relationship('Like', backref='like', lazy=True)
 
     def __repr__(self):
         return '<Starship %r>' % self.name
@@ -73,4 +74,17 @@ class Starship(db.Model):
             "model": self.model, 
             "cost_in_credits": self.cost_in_credits,
             "crew": self.crew
+        }
+    
+class Like(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    starship_id = db.Column(db.Integer, db.ForeignKey('starship.id'), nullable=False)
+
+    def __repr__(self):
+        return '<Like %r>' % self.id
+    
+    def serialize(self):
+        return {
+            "id" : self.id,
+            "starship_id" : self.starship_id 
         }

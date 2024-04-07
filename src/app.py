@@ -216,10 +216,60 @@ def update_planet(planet_id):
 @app.route('/starship', methods=['GET'])
 def get_starships():
     all_starships = Starship.query.all()
-    print(all_starships)
+    result = list(map(lambda starship : starship.serialize(), all_starships))
 
-    return jsonify('Todas las naves'), 200
+    return jsonify(result), 200
 
+@app.route('/starship/<int:starship_id>', methods=['GET'])
+def get_starship(starship_id):
+    starship = Starship.query.filter_by(id=starship_id).first()
+    
+    return jsonify(starship.serialize())
+
+@app.route('/starship', methods=['POST'])
+def add_starship():
+    body = request.get_json()
+    starship = Starship(
+        cost_in_credits = body['cost_in_credits'],
+        crew = body['crew'],
+        model = body['model'],
+        name = body['name']
+    )
+    db.session.add(starship)
+    db.session.commit()
+
+    response_body = {
+        "msg" : "starship added succesfully"
+    }
+    return jsonify(response_body), 200
+
+@app.route('/starship/<int:starship_id>', methods=['DELETE'])
+def delete_starship(starship_id):
+    starship = Starship.query.filter_by(id=starship_id).first()
+    db.session.delete(starship)
+    db.session.commit()
+
+    response_body = {
+        "msg" : "starship deleted sucesfully"
+    }
+    return jsonify(response_body), 200
+
+@app.route('/starship/<int:starship_id>', methods=['PUT'])
+def update_starship(starship_id):
+    starship = Starship.query.filter_by(id=starship_id).first()
+    body = request.get_json()
+    
+    starship.cost_in_credits = body['cost_in_credits'],
+    starship.crew = body['crew'],
+    starship.model = body['model'],
+    starship.name = body['name']
+
+    db.session.commit() 
+
+    response_body = {
+        "msg" : "starship updated sucesfully"
+    }
+    return jsonify(response_body), 200
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
