@@ -8,7 +8,8 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User, People, Planet, Starship
+from models import db, User, People, Planet, Starship, FavoritePlanet, FavoritePeople, FavoriteStarship
+from sqlalchemy import and_
 #from models import Person
 
 app = Flask(__name__)
@@ -269,6 +270,113 @@ def update_starship(starship_id):
     response_body = {
         "msg" : "starship updated sucesfully"
     }
+    return jsonify(response_body), 200
+
+#-----------------Favorites-----------------
+@app.route('/user/<int:user_id>/favorites/people', methods=['GET'])
+def get_favorite_people(user_id):
+    favorites = FavoritePeople.query.filter_by(user_id=user_id).all()
+    result = list(map(lambda favorite : favorite.serialize(), favorites))
+    
+    return jsonify(result)
+
+@app.route('/user/<int:user_id>/favorites/people/<int:people_id>', methods=['POST'])
+def create_favorite_people(user_id, people_id):
+    
+    new_favorite = FavoritePeople(
+        user_id = user_id,
+        people_id = people_id
+    )
+    db.session.add(new_favorite)
+    db.session.commit()
+
+    response_body = {
+        "msg" : "favorite added succesfully"
+    }
+
+    return jsonify(response_body), 200
+
+@app.route('/user/<int:user_id>/favorites/people/<int:people_id>', methods=['DELETE'])
+def delete_favorite_people(user_id, people_id):
+    favorite_to_delete = FavoritePeople.query.filter_by(user_id=user_id, people_id=people_id).first()
+    
+    db.session.delete(favorite_to_delete)
+    db.session.commit()
+
+    response_body = {
+        "msg" : "favorite deleted succesfully"
+    }
+    return jsonify(response_body), 200
+
+@app.route('/user/<int:user_id>/favorites/planet', methods=['GET'])
+def get_favorite_planet(user_id):
+
+    favorites = FavoritePlanet.query.filter_by(user_id=user_id).all()
+    result = list(map(lambda favorite: favorite.serialize() ,favorites))
+
+    return jsonify(result), 200
+
+@app.route('/user/<int:user_id>/favorites/planet/<int:planet_id>', methods=['POST'])
+def create_favorite_planet(user_id, planet_id):
+
+    new_favorite = FavoritePlanet(
+        user_id = user_id,
+        planet_id = planet_id
+    )
+    db.session.add(new_favorite)
+    db.session.commit()
+    
+    response_body = {
+        "msg": "favorite added succesfully"
+    }
+    return jsonify(response_body), 200
+
+@app.route('/user/<int:user_id>/favorites/planet/<int:planet_id>', methods=['DELETE'])
+def delete_favorite_planet(user_id, planet_id):
+    favorite_to_delete = FavoritePlanet.query.filter_by(user_id=user_id, planet_id=planet_id).first()
+
+    db.session.delete(favorite_to_delete)
+    db.session.commit()
+
+    response_body = {
+        "msg": "favorite deleted succesfully"
+    }
+    return jsonify(response_body), 200
+
+@app.route('/user/<int:user_id>/favorites/starship', methods=['GET'])
+def get_favorite_starship(user_id):
+    favorites = FavoriteStarship.query.filter_by(user_id=user_id).all()
+    result = list(map(lambda favorite: favorite.serialize(), favorites))
+
+    return jsonify(result), 200
+
+@app.route('/user/<int:user_id>/favorites/starship/<int:starship_id>', methods=['POST'])
+def create_favorite_starship(user_id, starship_id):
+
+    new_favorite = FavoriteStarship(
+        user_id = user_id,
+        starship_id = starship_id
+    )
+    db.session.add(new_favorite)
+    db.session.commit()
+
+    response_body = {
+        "msg": "favorite created succesfully"
+    }
+
+    return jsonify(response_body), 200
+
+@app.route('/user/<int:user_id>/favorites/starship/<int:starship_id>', methods=['DELETE'])
+def delete_favorite_starship(user_id, starship_id):
+    favorite_to_delete = FavoriteStarship.query.filter_by(user_id=user_id, starship_id=starship_id).first()
+    
+    db.session.delete(favorite_to_delete)
+    db.session.commit()
+
+    response_body = {
+        "msg": "favorite created succesfully"
+    }
+
     return jsonify(response_body), 200
 
 # this only runs if `$ python src/app.py` is executed

@@ -7,6 +7,9 @@ class User(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(80), unique=False, nullable=False)
     is_active = db.Column(db.Boolean(), unique=False, nullable=False)
+    favorite_people = db.relationship('FavoritePeople', backref='user', lazy=True)
+    favorite_planet = db.relationship('FavoritePlanet', backref='user', lazy=True)
+    favorite_starship = db.relationship('FavoriteStarship', backref='user', lazy=True)
 
     def __repr__(self):
         return '<User %r>' % self.id
@@ -14,7 +17,7 @@ class User(db.Model):
     def serialize(self):
         return {
             "id": self.id,
-            "email": self.email
+            "email": self.email   
             # do not serialize the password, its a security breach
         }
 
@@ -24,6 +27,7 @@ class People(db.Model):
     height = db.Column(db.Integer, unique=False, nullable=False)
     hair_color = db.Column(db.String(250), unique=False, nullable=False)
     gender = db.Column(db.String(250), unique=False, nullable=False)
+    favorite = db.relationship('FavoritePeople', backref='people', lazy=True)
 
     def __repr__(self):
         return '<People %r>' % self.name
@@ -43,6 +47,7 @@ class Planet(db.Model):
     rotation_period = db.Column(db.Integer, nullable=False)
     climate = db.Column(db.String(250), unique=False, nullable=False)
     terrain = db.Column(db.String(250), unique=False, nullable=False)
+    favorite = db.relationship('FavoritePlanet', backref='planet', lazy=True)
 
     def __repr__(self):
         return '<Planet %r>' % self.name
@@ -62,7 +67,7 @@ class Starship(db.Model):
     model = db.Column(db.String(250), unique=True, nullable=False)
     cost_in_credits = db.Column(db.Integer, unique=False, nullable=False)
     crew = db.Column(db.Integer, unique=False, nullable=False)
-    like = db.relationship('Like', backref='like', lazy=True)
+    favorite = db.relationship('FavoriteStarship', backref='starship', lazy=True)
 
     def __repr__(self):
         return '<Starship %r>' % self.name
@@ -76,15 +81,47 @@ class Starship(db.Model):
             "crew": self.crew
         }
     
-class Like(db.Model):
+class FavoritePeople(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    starship_id = db.Column(db.Integer, db.ForeignKey('starship.id'), nullable=False)
-
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    people_id = db.Column(db.Integer, db.ForeignKey('people.id'), nullable=False)
+    
     def __repr__(self):
-        return '<Like %r>' % self.id
+        return '<Favorite %r>' % self.id
     
     def serialize(self):
         return {
-            "id" : self.id,
-            "starship_id" : self.starship_id 
+            "id": self.id,
+            "user_id": self.user_id,
+            "people_id": self.people_id
+        }
+    
+class FavoritePlanet(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    planet_id = db.Column(db.Integer, db.ForeignKey('planet.id'), nullable=False)
+    
+    def __repr__(self):
+        return '<Favorite %r>' % self.id
+    
+    def serialize(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "planet_id": self.planet_id
+        }
+    
+class FavoriteStarship(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    starship_id = db.Column(db.Integer, db.ForeignKey('starship.id'), nullable=False)
+    
+    def __repr__(self):
+        return '<Favorite %r>' % self.id
+    
+    def serialize(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "starship_id": self.starship_id
         }
